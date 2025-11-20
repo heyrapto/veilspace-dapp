@@ -79,7 +79,7 @@ export default function MarketPage() {
         <div className="flex items-center gap-2 px-3 py-2 bg-[#476CFF]/16 rounded-[8px]">
           <InfoIcon />
           <p className="text-xs text-white">
-          {address ? "Browse Mode: Connect your wallet to purchase or create listings." : ""}
+          {address ? "" : "Browse Mode: Connect your wallet to purchase or create listings."}
           </p>
         </div>
       </div>
