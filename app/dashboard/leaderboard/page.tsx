@@ -1,5 +1,6 @@
 "use client";
 
+import { useAccount } from "wagmi";
 import {
   InfoIcon,
   SortIcon,
@@ -82,6 +83,7 @@ const leaderboardData: LeaderboardEntry[] = [
 ];
 
 export default function LeaderboardPage() {
+  const { address } = useAccount();
   return (
     <div className="flex flex-col min-h-screen ">
       {/* Informational Banner */}
@@ -89,8 +91,7 @@ export default function LeaderboardPage() {
         <div className="flex items-center gap-2 px-2 h-8 bg-[#476CFF]/16 rounded-[8px] ">
           <InfoIcon />
           <p className="text-xs text-white">
-            Browse Mode: You're viewing the leaderboard. Connect your wallet to
-            create listings and make purchases.
+            {address ? "Browse Mode: You're viewing the leaderboard. Connect your wallet to create listings and make purchases." : "You're connected"}
           </p>
         </div>
       </div>

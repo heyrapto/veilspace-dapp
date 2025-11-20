@@ -1,8 +1,8 @@
 "use client";
 import { SearchIcon } from "../../ui/icons";
-import { Button } from "../../ui/button";
 import MenuLink from "./menuLinks/menuLink";
 import Link from "next/link";
+import CustomConnectButton from "../../ui/custom/connect-button";
 
 const TopNavbar = () => {
   const menuItems = [
@@ -55,7 +55,7 @@ const TopNavbar = () => {
             </div>
           </div>
 
-          <Button>Create account</Button>
+          <CustomConnectButton />
         </div>
       </div>
     </div>

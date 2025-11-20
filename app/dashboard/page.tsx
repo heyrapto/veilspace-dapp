@@ -1,5 +1,5 @@
 import { AnoymousIcon, PlatformIcon, TokenIcon } from "../components/ui/icons";
-import { Button } from "../components/ui/button";
+import CustomConnectButton from "../components/ui/custom/connect-button";
 
 export default function DashboardPage() {
   return (
@@ -18,10 +18,10 @@ export default function DashboardPage() {
               Connect Your Wallet
             </h4>
             <p className="mt-2 text-sm text-[#A3A3A3] text-center mb-6">
-              Connect your Solana wallet to get started. You'll need Phantom
+              Connect your Solana wallet to get started. You&apos;ll need Phantom
               installed.
             </p>
-            <Button>Select Wallet</Button>
+            <CustomConnectButton />
           </div>
           <div className="flex gap-4 p-4">
             <div className="h-10 cursor-pointer flex gap-2 px-2.5 items-center bg-[#171717] rounded-[10px] border border-[#262626] shadow-[0_1px_2px_0_rgba(10,13,20,0.03)] ">

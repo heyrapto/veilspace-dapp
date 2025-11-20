@@ -10,8 +10,8 @@ import {
   EyeIcon,
   InfoIcon,
 } from "../../components/ui/icons";
-import { Button } from "../../components/ui/button";
 import Image from "next/image";
+import { useAccount } from "wagmi";
 
 interface Product {
   id: string;
@@ -62,6 +62,7 @@ const products: Product[] = [
 
 export default function MarketPage() {
   const [viewMode, setViewMode] = React.useState<"grid" | "list">("grid");
+  const { address } = useAccount();
 
   return (
     <div className="px-[44px]">
@@ -78,7 +79,7 @@ export default function MarketPage() {
         <div className="flex items-center gap-2 px-3 py-2 bg-[#476CFF]/16 rounded-[8px]">
           <InfoIcon />
           <p className="text-xs text-white">
-            Browse Mode: Connect your wallet to purchase or create listings.
+          {address ? "Browse Mode: Connect your wallet to purchase or create listings." : ""}
           </p>
         </div>
       </div>
