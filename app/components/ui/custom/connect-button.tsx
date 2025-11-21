@@ -3,7 +3,6 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Button } from "../button";
 import Image from "next/image";
-export const arbitrumUsdcAddress = "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8";
 
 const CustomConnectButton = ({
   onclick,
@@ -64,14 +63,15 @@ const CustomConnectButton = ({
                       onClick={openAccountModal}
                       className="w-full"
                     >
-                      {chain.iconUrl && (
+                      {/* {chain.iconUrl && (
                         <Image
                           alt={chain.name ?? "Chain icon"}
                           src={chain.iconUrl}
                           className="h-full"
-                          fill
+                          width={25}
+                          height={25}
                         />
-                      )}
+                      )} */}
                       {account.displayName}
                       {account.displayBalance
                         ? ` (${account.displayBalance})`

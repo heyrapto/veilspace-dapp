@@ -315,3 +315,240 @@ export class FundraiserController {
     res.json(new ApiResponse(200, result));
   }
 }
+
+# Prisma Schema (in the backend, i found this.. just incase you need it for to ensure 100% correct reponse is shown on the UI, you can make corrections where needed)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// CORE MODELS
+// ============================================================================
+
+model User {
+  id            String   @id @default(uuid())
+  walletAddress String   @unique @map("wallet_address") // Solana wallet public key
+  handle        String?  @unique // Optional username/display name
+  avatar        String?
+  bio           String?
+  roles         String[] @default(["user"])
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  marketItems MarketItem[]          @relation("SellerItems")
+  purchases   Purchase[]            @relation("BuyerPurchases")
+  fundraisers Fundraiser[]          @relation("OwnerFundraisers")
+  donations   FundraiserDonation[]  @relation("DonorDonations")
+  metrics     Metric[]
+
+  @@map("users")
+}
+
+// ============================================================================
+// CATEGORY SYSTEM (Unified for Market & Fundraisers)
+// ============================================================================
+
+model Category {
+  id          String       @id @default(uuid())
+  slug        String       @unique
+  title       String
+  description String?
+  orderIndex  Int          @default(0) @map("order_index")
+  typeScope   String[]     @default(["global"]) @map("type_scope") // ['global', 'market', 'fundraiser']
+  parentId    String?      @map("parent_id")
+  parent      Category?    @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Category[]   @relation("CategoryHierarchy")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  // Relations
+  marketItems MarketItem[]
+  fundraisers Fundraiser[]
+
+  @@index([typeScope])
+  @@index([orderIndex])
+  @@map("categories")
+}
+
+// ============================================================================
+// MARKET MODULE
+// ============================================================================
+
+model MarketItem {
+  id            String     @id @default(uuid())
+  sellerId      String     @map("seller_id")
+  seller        User       @relation("SellerItems", fields: [sellerId], references: [id], onDelete: Cascade)
+  categoryId    String     @map("category_id")
+  category      Category   @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  title         String
+  description   String
+  price         Float
+  currency      String     @default("USD")
+  media         Json[]     @default([]) // [{url, type, order}]
+  tags          String[]   @default([])
+
+  stock         Int        @default(0)
+  status        String     @default("active") // active, sold_out, inactive
+
+  views         Int        @default(0)
+  likes         Int        @default(0)
+
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+
+  // Relations
+  purchases     Purchase[]
+
+  @@index([categoryId])
+  @@index([sellerId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("market_items")
+}
+
+model Purchase {
+  id                String     @id @default(uuid())
+  marketItemId      String     @map("market_item_id")
+  marketItem        MarketItem @relation(fields: [marketItemId], references: [id], onDelete: Cascade)
+  buyerId           String     @map("buyer_id")
+  buyer             User       @relation("BuyerPurchases", fields: [buyerId], references: [id], onDelete: Cascade)
+
+  amount      Float
+  quantity    Int        @default(1)
+  status      String     @default("pending") // pending, completed, failed
+
+  createdAt         DateTime   @default(now()) @map("created_at")
+  updatedAt         DateTime   @updatedAt @map("updated_at")
+
+  @@index([marketItemId])
+  @@index([buyerId])
+  @@index([status])
+  @@map("purchases")
+}
+
+// ============================================================================
+// FUNDRAISER MODULE
+// ============================================================================
+
+model Fundraiser {
+  id                String               @id @default(uuid())
+  ownerId           String               @map("owner_id")
+  owner             User                 @relation("OwnerFundraisers", fields: [ownerId], references: [id], onDelete: Cascade)
+  categoryId        String               @map("category_id")
+  category          Category             @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  title       String
+  summary     String
+  description String?
+  goal        Float
+  deadlineAt  DateTime? @map("deadline_at")
+
+  media             Json[]               @default([]) // [{url, type, order}]
+  tags              String[]             @default([])
+
+  status          String @default("active") // active, completed, cancelled
+  updatesCount    Int    @default(0) @map("updates_count")
+  supportersCount Int    @default(0) @map("supporters_count")
+  totalRaised     Float  @default(0) @map("total_raised")
+
+  views             Int                  @default(0)
+  likes             Int                  @default(0)
+
+  createdAt         DateTime             @default(now()) @map("created_at")
+  updatedAt         DateTime             @updatedAt @map("updated_at")
+
+  // Relations
+  donations         FundraiserDonation[]
+
+  @@index([categoryId])
+  @@index([ownerId])
+  @@index([status])
+  @@index([deadlineAt])
+  @@index([createdAt])
+  @@map("fundraisers")
+}
+
+model FundraiserDonation {
+  id            String     @id @default(uuid())
+  fundraiserId  String     @map("fundraiser_id")
+  fundraiser    Fundraiser @relation(fields: [fundraiserId], references: [id], onDelete: Cascade)
+  donorId       String     @map("donor_id")
+  donor         User       @relation("DonorDonations", fields: [donorId], references: [id], onDelete: Cascade)
+
+  amount    Float
+  message   String?
+  anonymous Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([fundraiserId])
+  @@index([donorId])
+  @@map("fundraiser_donations")
+}
+
+// ============================================================================
+// LEADERBOARD MODULE
+// ============================================================================
+
+model LeaderboardSnapshot {
+  id          String   @id @default(uuid())
+  scope       String   // 'market_sales', 'fundraiser_raised', 'top_donors'
+  period      String   // 'daily', 'weekly', 'monthly', 'all_time'
+  entityId    String   @map("entity_id") // user_id or item_id depending on scope
+  entityType  String   @map("entity_type") // 'user', 'market_item', 'fundraiser'
+  metricValue Float    @map("metric_value")
+  rank        Int?
+  capturedAt  DateTime @default(now()) @map("captured_at")
+
+  @@unique([scope, period, entityId, capturedAt])
+  @@index([scope, period, rank])
+  @@index([capturedAt])
+  @@map("leaderboard_snapshots")
+}
+
+// ============================================================================
+// METRICS & ANALYTICS
+// ============================================================================
+
+model Metric {
+  id            String     @id @default(uuid())
+  eventType     String     @map("event_type") // 'view', 'click', 'purchase', 'donation', 'like'
+  entityType    String     @map("entity_type") // 'market_item', 'fundraiser'
+  entityId      String     @map("entity_id")
+  userId        String?    @map("user_id")
+  user          User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  metadata      Json?
+  ipAddress     String?    @map("ip_address")
+  userAgent     String?    @map("user_agent")
+
+  createdAt     DateTime   @default(now()) @map("created_at")
+
+  @@index([eventType, entityType, entityId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("metrics")
+}
+
+// ============================================================================
+// SETTINGS
+// ============================================================================
+
+model SystemSetting {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       String
+  valueType   String   @default("string") @map("value_type") // 'string', 'number', 'boolean', 'json'
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("system_settings")
+}

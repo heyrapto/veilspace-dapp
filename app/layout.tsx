@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { DM_Mono, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import { WagmiProviders } from "./components/providers/wagmi";
+import { AuthProvider } from "./components/providers/auth-provider";
 
 const instrumentSerif = Instrument_Serif({
   variable: "--font-instrument-serif",
@@ -31,7 +32,9 @@ export default function RootLayout({
         className={`${instrumentSerif.variable} relative ${dmMono.variable} antialiased`}
       >
         <WagmiProviders>
-          <div className="relative z-20"> {children}</div>
+          <AuthProvider>
+            <div className="relative z-20"> {children}</div>
+          </AuthProvider>
         </WagmiProviders>
       </body>
     </html>

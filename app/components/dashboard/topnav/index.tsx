@@ -3,8 +3,30 @@ import { SearchIcon } from "../../ui/icons";
 import MenuLink from "./menuLinks/menuLink";
 import Link from "next/link";
 import CustomConnectButton from "../../ui/custom/connect-button";
+import { useSearchStore } from "@/app/store";
+import { useRouter } from "next/navigation";
+import * as React from "react";
 
 const TopNavbar = () => {
+  const router = useRouter();
+  const { query, search, isLoading } = useSearchStore();
+  const [searchInput, setSearchInput] = React.useState("");
+
+  const handleSearch = React.useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (searchInput.trim()) {
+        await search({ q: searchInput.trim(), type: "all" });
+        router.push("/dashboard/market");
+      }
+    },
+    [searchInput, search, router]
+  );
+
+  React.useEffect(() => {
+    setSearchInput(query);
+  }, [query]);
+
   const menuItems = [
     {
       title: "Main",
@@ -39,7 +61,7 @@ const TopNavbar = () => {
           </nav>
         </div>
         <div className="flex items-center gap-4">
-          <div className=" h-10 rounded-[10px] px-3 border  border-[#262626] bg-[#171717]  shadow-[0_1px_2px_0_rgba(10,13,20,0.03)] flex items-center justify-between">
+          <form onSubmit={handleSearch} className="h-10 rounded-[10px] px-3 border  border-[#262626] bg-[#171717]  shadow-[0_1px_2px_0_rgba(10,13,20,0.03)] flex items-center justify-between">
             <div className="flex gap-2 items-center">
               <div className="shrink-0">
                 <SearchIcon />
@@ -47,13 +69,16 @@ const TopNavbar = () => {
               <input
                 type="text"
                 placeholder="Search"
-                className="bg-transparent outline-none border-none"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                className="bg-transparent outline-none border-none text-white/95 placeholder:text-[#7b7b7b]"
+                disabled={isLoading}
               />
             </div>
             <div className="w-[31px] h-5 bg-[#171717] border border-[#262626] rounded-[4px] flex justify-center items-center text-[#7b7b7b]">
               ⌘1
             </div>
-          </div>
+          </form>
 
           <CustomConnectButton />
         </div>

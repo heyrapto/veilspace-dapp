@@ -3,67 +3,79 @@
 import * as React from "react";
 import {
   AllListingsIcon,
-  RobotIcon,
-  WrenchIcon,
-  DocumentIcon,
-  BriefcaseIcon,
-  MusicIcon,
-  GamepadIcon,
-  PuzzleIcon,
-  LockIcon,
-  PhoneIcon,
-  MegaphoneIcon,
-  PaperPlaneIcon,
-  ChatIcon,
-  PaletteIcon,
-  PlayIcon,
 } from "../ui/icons";
+import { Loading } from "../ui/loading";
+import { ErrorState } from "../ui/error-state";
+import { useCategories } from "@/app/hooks/use-categories-query";
 
-interface Category {
-  name: string;
-  icon: React.ReactNode;
+interface MarketSidebarProps {
+  onCategorySelect?: (categorySlug: string | null) => void;
+  scope?: "global" | "market" | "fundraiser";
 }
 
-const categories: Category[] = [
-  { name: "All listings", icon: <AllListingsIcon /> },
-  { name: "Trading bots", icon: <RobotIcon /> },
-  { name: "API tools", icon: <WrenchIcon /> },
-  { name: "Scripts", icon: <DocumentIcon /> },
-  { name: "Job search", icon: <BriefcaseIcon /> },
-  { name: "Music", icon: <MusicIcon /> },
-  { name: "Games", icon: <GamepadIcon /> },
-  { name: "Mods", icon: <PuzzleIcon /> },
-  { name: "Private access", icon: <LockIcon /> },
-  { name: "Call groups", icon: <PhoneIcon /> },
-  { name: "Raid services", icon: <MegaphoneIcon /> },
-  { name: "Telegram groups", icon: <PaperPlaneIcon /> },
-  { name: "Discord services", icon: <ChatIcon /> },
-  { name: "Art & design", icon: <PaletteIcon /> },
-  { name: "Video content", icon: <PlayIcon /> },
-];
+export default function MarketSidebar({
+  onCategorySelect,
+  scope = "global",
+}: MarketSidebarProps) {
+  const [selectedCategory, setSelectedCategory] = React.useState<string | null>(null);
+  const { data: categories, isLoading, error, refetch } = useCategories(scope);
 
-export default function MarketSidebar() {
-  const [selectedCategory, setSelectedCategory] =
-    React.useState("All listings");
+  const handleCategoryClick = (categorySlug: string | null) => {
+    setSelectedCategory(categorySlug);
+    onCategorySelect?.(categorySlug);
+  };
+
+  if (error) {
+    return (
+      <div className="w-[258px] p-2.5 rounded-[16px] border border-[#262626] bg-[#171717] shadow-[0_1px_2px_rgba(10,13,20,0.03)]">
+        <ErrorState
+          message={error.message || "Failed to load categories"}
+          onRetry={() => refetch()}
+          retryText="Retry"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="w-[258px] p-2.5 rounded-[16px] border border-[#262626] bg-[#171717] shadow-[0_1px_2px_rgba(10,13,20,0.03)]">
-      <nav className="flex flex-col gap-2">
-        {categories.map((category) => (
+      {isLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <Loading size="sm" />
+        </div>
+      ) : (
+        <nav className="flex flex-col gap-2">
           <button
-            key={category.name}
-            onClick={() => setSelectedCategory(category.name)}
+            onClick={() => handleCategoryClick(null)}
             className={`flex items-center gap-1.5 px-3 h-9 rounded-[8px] text-sm transition-colors cursor-pointer ${
-              selectedCategory === category.name
+              !selectedCategory
                 ? "bg-[#262626] text-white"
                 : "text-white/60 hover:text-white hover:bg-[#262626]"
             }`}
           >
-            {category.icon && <span className="shrink-0">{category.icon}</span>}
-            <span>{category.name}</span>
+            <span className="shrink-0">
+              <AllListingsIcon />
+            </span>
+            <span>All listings</span>
           </button>
-        ))}
-      </nav>
+          {categories?.map((category) => (
+            <button
+              key={category.id}
+              onClick={() => handleCategoryClick(category.slug)}
+              className={`flex items-center gap-1.5 px-3 h-9 rounded-[8px] text-sm transition-colors cursor-pointer ${
+                selectedCategory === category.slug
+                  ? "bg-[#262626] text-white"
+                  : "text-white/60 hover:text-white hover:bg-[#262626]"
+              }`}
+            >
+              <span className="shrink-0">
+                <AllListingsIcon />
+              </span>
+              <span>{category.title}</span>
+            </button>
+          ))}
+        </nav>
+      )}
     </div>
   );
 }
