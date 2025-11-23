@@ -11,7 +11,7 @@ const buttonVariants = cva(
         default:
           "rounded-[var(--radius-10,10px)] border border-[rgba(255,255,255,0.12)] btn-default hover:opacity-90 active:scale-[0.98]",
         destructive:
-          "bg-red-500 text-gray-50 hover:bg-red-500/90 hover:shadow-lg active:scale-[0.98]",
+          "rounded-[var(--radius-10,10px)] bg-red-500 text-gray-50 hover:bg-red-500/90 hover:shadow-lg active:scale-[0.98]",
         outline:
           "border border-gray-200 bg-none hover:bg-gray-100 hover:text-gray-900 hover:border-gray-300 active:scale-[0.98]",
         secondary:

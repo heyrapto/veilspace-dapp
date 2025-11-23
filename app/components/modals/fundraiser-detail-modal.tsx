@@ -3,12 +3,14 @@
 import * as React from "react";
 import { Modal } from "../ui/modal";
 import { Button } from "../ui/button";
-import { Fundraiser } from "@/app/services.tsx/api-client";
-import { useFundraiser } from "@/app/hooks/use-fundraiser-query";
+import { Fundraiser, DonateRequest } from "@/app/services.tsx/api-client";
+import { useFundraiser, useDonateToFundraiser } from "@/app/hooks/use-fundraiser-query";
 import { Loading } from "../ui/loading";
 import { ErrorState } from "../ui/error-state";
 import Image from "next/image";
-import { EyeIcon, EditIcon, TrashIcon } from "../ui/icons";
+import { EyeIcon, TrashIcon } from "../ui/icons";
+import { SlidingPanel } from "../ui/sliding-panel";
+import { useAuthStore } from "@/app/store";
 
 interface FundraiserDetailModalProps {
   isOpen: boolean;
@@ -28,6 +30,39 @@ export const FundraiserDetailModal: React.FC<FundraiserDetailModalProps> = ({
   canEdit = false,
 }) => {
   const { data: fundraiser, isLoading, error } = useFundraiser(fundraiserId);
+  const { user } = useAuthStore();
+  const donateMutation = useDonateToFundraiser();
+  const [isDonatePanelOpen, setIsDonatePanelOpen] = React.useState(false);
+  const [amount, setAmount] = React.useState(0);
+  const [message, setMessage] = React.useState("");
+  const [anonymous, setAnonymous] = React.useState(false);
+  const [donateError, setDonateError] = React.useState<string | null>(null);
+
+  const handleDonate = async () => {
+    if (!fundraiser || !user?.id || amount <= 0) return;
+    
+    setDonateError(null);
+    try {
+      const donateData: DonateRequest = {
+        donorId: user.id,
+        amount,
+        message: message.trim() || undefined,
+        anonymous,
+      };
+      await donateMutation.mutateAsync({
+        id: fundraiser.id,
+        data: donateData,
+      });
+      setIsDonatePanelOpen(false);
+      setAmount(0);
+      setMessage("");
+      setAnonymous(false);
+    } catch (error) {
+      setDonateError(
+        error instanceof Error ? error.message : "Donation failed"
+      );
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -49,22 +84,32 @@ export const FundraiserDetailModal: React.FC<FundraiserDetailModalProps> = ({
       title="Fundraiser Details"
       size="lg"
       footer={
-        <div className="flex items-center gap-3 w-full">
-          <Button variant="ghostly" onClick={onClose} className="flex-1">
-            Close
-          </Button>
+        <div className="flex items-center gap-3 w-full justify-end">
+          {fundraiser && user?.id && fundraiser.ownerId !== user.id && fundraiser.status === "active" && (
+            <Button
+              variant="default"
+              onClick={() => setIsDonatePanelOpen(true)}
+            >
+              Donate
+            </Button>
+          )}
           {canEdit && fundraiser && (
             <>
-              <Button
+              {/* <Button
                 variant="default"
                 onClick={() => {
                   onEdit(fundraiser);
                   onClose();
                 }}
-                icon={<EditIcon />}
               >
                 Edit
-              </Button>
+              </Button> */}
+              <Button
+              variant="default"
+              onClick={() => setIsDonatePanelOpen(true)}
+            >
+              Donate
+            </Button>
               <Button
                 variant="destructive"
                 onClick={() => {
@@ -226,6 +271,88 @@ export const FundraiserDetailModal: React.FC<FundraiserDetailModalProps> = ({
           )}
         </div>
       ) : null}
+
+      {/* Donate Panel */}
+      <SlidingPanel
+        isOpen={isDonatePanelOpen}
+        onClose={() => {
+          setIsDonatePanelOpen(false);
+          setDonateError(null);
+          setAmount(0);
+          setMessage("");
+        }}
+        title="Donate to Fundraiser"
+      >
+        {fundraiser && (
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-white/95 text-lg font-medium mb-2">
+                {fundraiser.title}
+              </h3>
+              <p className="text-[#A3A3A3] text-sm">
+                Goal: ${fundraiser.goal.toLocaleString()}
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-white/95 text-sm font-medium mb-2">
+                Donation Amount *
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                min="0.01"
+                value={amount}
+                onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
+                className="w-full h-10 rounded-[10px] px-3 border border-[#262626] bg-[#171717] text-white/95 outline-none focus:border-[#333] transition-colors"
+                placeholder="0.00"
+              />
+            </div>
+
+            <div>
+              <label className="block text-white/95 text-sm font-medium mb-2">
+                Message (Optional)
+              </label>
+              <textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                rows={3}
+                className="w-full rounded-[10px] px-3 py-2 border border-[#262626] bg-[#171717] text-white/95 placeholder:text-[#7b7b7b] outline-none focus:border-[#333] transition-colors resize-none"
+                placeholder="Leave a message of support..."
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="anonymous"
+                checked={anonymous}
+                onChange={(e) => setAnonymous(e.target.checked)}
+                className="w-4 h-4 rounded border border-[#262626] bg-[#171717] appearance-none checked:bg-[#7D52F4] checked:border-[#7D52F4] cursor-pointer"
+              />
+              <label htmlFor="anonymous" className="text-[#A3A3A3] text-sm cursor-pointer">
+                Donate anonymously
+              </label>
+            </div>
+
+            {donateError && (
+              <div className="bg-red-500/10 border border-red-500/20 rounded-[10px] p-3">
+                <p className="text-red-400 text-sm">{donateError}</p>
+              </div>
+            )}
+
+            <Button
+              onClick={handleDonate}
+              isLoading={donateMutation.isPending}
+              loadingText="Processing..."
+              className="w-full"
+              disabled={!user?.id || amount <= 0}
+            >
+              Confirm Donation
+            </Button>
+          </div>
+        )}
+      </SlidingPanel>
     </Modal>
   );
 };

@@ -3,12 +3,14 @@
 import * as React from "react";
 import { Modal } from "../ui/modal";
 import { Button } from "../ui/button";
-import { MarketItem } from "@/app/services.tsx/api-client";
-import { useMarketItem } from "@/app/hooks/use-market-query";
+import { MarketItem, PurchaseRequest } from "@/app/services.tsx/api-client";
+import { useMarketItem, usePurchaseMarketItem } from "@/app/hooks/use-market-query";
 import { Loading } from "../ui/loading";
 import { ErrorState } from "../ui/error-state";
 import Image from "next/image";
-import { EyeIcon, EditIcon, TrashIcon } from "../ui/icons";
+import { EyeIcon, TrashIcon } from "../ui/icons";
+import { SlidingPanel } from "../ui/sliding-panel";
+import { useAuthStore } from "@/app/store";
 
 interface MarketItemDetailModalProps {
   isOpen: boolean;
@@ -28,6 +30,33 @@ export const MarketItemDetailModal: React.FC<MarketItemDetailModalProps> = ({
   canEdit = false,
 }) => {
   const { data: item, isLoading, error } = useMarketItem(itemId);
+  const { user } = useAuthStore();
+  const purchaseMutation = usePurchaseMarketItem();
+  const [isPurchasePanelOpen, setIsPurchasePanelOpen] = React.useState(false);
+  const [quantity, setQuantity] = React.useState(1);
+  const [purchaseError, setPurchaseError] = React.useState<string | null>(null);
+
+  const handlePurchase = async () => {
+    if (!item || !user?.id) return;
+    
+    setPurchaseError(null);
+    try {
+      const purchaseData: PurchaseRequest = {
+        buyerId: user.id,
+        quantity,
+      };
+      await purchaseMutation.mutateAsync({
+        id: item.id,
+        data: purchaseData,
+      });
+      setIsPurchasePanelOpen(false);
+      onClose();
+    } catch (error) {
+      setPurchaseError(
+        error instanceof Error ? error.message : "Purchase failed"
+      );
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -38,22 +67,34 @@ export const MarketItemDetailModal: React.FC<MarketItemDetailModalProps> = ({
       title="Market Item Details"
       size="lg"
       footer={
-        <div className="flex items-center gap-3 w-full">
-          <Button variant="ghostly" onClick={onClose} className="flex-1">
-            Close
-          </Button>
+        <div className="flex items-center gap-3 w-full justify-end">
+          {item && user?.id && item.sellerId !== user.id && item.status === "active" && (
+            <Button
+              variant="default"
+              onClick={() => setIsPurchasePanelOpen(true)}
+              disabled={item.stock === 0}
+            >
+              Purchase
+            </Button>
+          )}
           {canEdit && item && (
             <>
-              <Button
+              {/* <Button
                 variant="default"
                 onClick={() => {
                   onEdit(item);
                   onClose();
                 }}
-                icon={<EditIcon />}
               >
                 Edit
-              </Button>
+              </Button> */}
+              <Button
+              variant="default"
+              onClick={() => setIsPurchasePanelOpen(true)}
+              disabled={item.stock === 0}
+            >
+              Purchase
+            </Button>
               <Button
                 variant="destructive"
                 onClick={() => {
@@ -196,6 +237,79 @@ export const MarketItemDetailModal: React.FC<MarketItemDetailModalProps> = ({
           )}
         </div>
       ) : null}
+
+      {/* Purchase Panel */}
+      <SlidingPanel
+        isOpen={isPurchasePanelOpen}
+        onClose={() => {
+          setIsPurchasePanelOpen(false);
+          setPurchaseError(null);
+        }}
+        title="Purchase Item"
+      >
+        {item && (
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-white/95 text-lg font-medium mb-2">
+                {item.title}
+              </h3>
+              <p className="text-[#A3A3A3] text-sm">
+                ${item.price} {item.currency} each
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-white/95 text-sm font-medium mb-2">
+                Quantity
+              </label>
+              <input
+                type="number"
+                min="1"
+                max={item.stock}
+                value={quantity}
+                onChange={(e) =>
+                  setQuantity(Math.max(1, Math.min(item.stock || 1, parseInt(e.target.value) || 1)))
+                }
+                className="w-full h-10 rounded-[10px] px-3 border border-[#262626] bg-[#171717] text-white/95 outline-none focus:border-[#333] transition-colors"
+              />
+              <p className="text-[#A3A3A3] text-xs mt-1">
+                {item.stock} available
+              </p>
+            </div>
+
+            <div className="bg-[#262626] rounded-[10px] p-4 border border-[#333]">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[#A3A3A3] text-sm">Subtotal</span>
+                <span className="text-white/95 text-sm">
+                  ${(item.price * quantity).toFixed(2)} {item.currency}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-white/95 font-medium">Total</span>
+                <span className="text-white/95 text-lg font-medium">
+                  ${(item.price * quantity).toFixed(2)} {item.currency}
+                </span>
+              </div>
+            </div>
+
+            {purchaseError && (
+              <div className="bg-red-500/10 border border-red-500/20 rounded-[10px] p-3">
+                <p className="text-red-400 text-sm">{purchaseError}</p>
+              </div>
+            )}
+
+            <Button
+              onClick={handlePurchase}
+              isLoading={purchaseMutation.isPending}
+              loadingText="Processing..."
+              className="w-full"
+              disabled={!user?.id || item.stock === 0}
+            >
+              Confirm Purchase
+            </Button>
+          </div>
+        )}
+      </SlidingPanel>
     </Modal>
   );
 };

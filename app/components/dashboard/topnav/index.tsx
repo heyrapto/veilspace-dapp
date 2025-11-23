@@ -1,23 +1,25 @@
 "use client";
-import { SearchIcon } from "../../ui/icons";
+import { SearchIcon, ProfileIcon } from "../../ui/icons";
 import MenuLink from "./menuLinks/menuLink";
 import Link from "next/link";
 import CustomConnectButton from "../../ui/custom/connect-button";
 import { useSearchStore } from "@/app/store";
 import { useRouter } from "next/navigation";
+import { useAccount } from "wagmi";
 import * as React from "react";
 
 const TopNavbar = () => {
   const router = useRouter();
   const { query, search, isLoading } = useSearchStore();
   const [searchInput, setSearchInput] = React.useState("");
+  const { address } = useAccount();
 
   const handleSearch = React.useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
       if (searchInput.trim()) {
         await search({ q: searchInput.trim(), type: "all" });
-        router.push("/dashboard/market");
+        router.push(`/dashboard/search?q=${encodeURIComponent(searchInput.trim())}&type=all`);
       }
     },
     [searchInput, search, router]
@@ -79,6 +81,15 @@ const TopNavbar = () => {
               ⌘1
             </div>
           </form>
+
+          {address && (
+            <Link
+              href="/dashboard/profile"
+              className="h-10 w-10 rounded-[10px] border border-[#262626] bg-[#171717] shadow-[0_1px_2px_0_rgba(10,13,20,0.03)] flex items-center justify-center text-white/95 hover:bg-[#262626] transition-colors"
+            >
+              <ProfileIcon />
+            </Link>
+          )}
 
           <CustomConnectButton />
         </div>
