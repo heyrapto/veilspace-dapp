@@ -11,6 +11,7 @@ import Image from "next/image";
 import { EyeIcon, TrashIcon } from "../ui/icons";
 import { SlidingPanel } from "../ui/sliding-panel";
 import { useAuthStore } from "@/app/store";
+import { PaymentButton } from "../payment/PaymentButton";
 
 interface MarketItemDetailModalProps {
   isOpen: boolean;
@@ -35,6 +36,25 @@ export const MarketItemDetailModal: React.FC<MarketItemDetailModalProps> = ({
   const [isPurchasePanelOpen, setIsPurchasePanelOpen] = React.useState(false);
   const [quantity, setQuantity] = React.useState(1);
   const [purchaseError, setPurchaseError] = React.useState<string | null>(null);
+
+  const numericItemPrice = React.useMemo(() => {
+    if (!item) return 0;
+    const rawPrice =
+      typeof item.price === "number"
+        ? item.price
+        : parseFloat(String(item.price ?? 0));
+    return Number.isFinite(rawPrice) ? rawPrice : 0;
+  }, [item]);
+
+  const totalPriceValue = React.useMemo(
+    () => numericItemPrice * quantity,
+    [numericItemPrice, quantity]
+  );
+
+  const formattedTotalPrice = React.useMemo(
+    () => totalPriceValue.toFixed(2),
+    [totalPriceValue]
+  );
 
   const handlePurchase = async () => {
     if (!item || !user?.id) return;
@@ -281,13 +301,13 @@ export const MarketItemDetailModal: React.FC<MarketItemDetailModalProps> = ({
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[#A3A3A3] text-sm">Subtotal</span>
                 <span className="text-white/95 text-sm">
-                  ${(item.price * quantity).toFixed(2)} {item.currency}
+                  ${formattedTotalPrice} {item.currency}
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-white/95 font-medium">Total</span>
                 <span className="text-white/95 text-lg font-medium">
-                  ${(item.price * quantity).toFixed(2)} {item.currency}
+                  ${formattedTotalPrice} {item.currency}
                 </span>
               </div>
             </div>
@@ -298,15 +318,33 @@ export const MarketItemDetailModal: React.FC<MarketItemDetailModalProps> = ({
               </div>
             )}
 
-            <Button
-              onClick={handlePurchase}
-              isLoading={purchaseMutation.isPending}
-              loadingText="Processing..."
-              className="w-full"
-              disabled={!user?.id || item.stock === 0}
-            >
-              Confirm Purchase
-            </Button>
+            {purchaseMutation.isPending && (
+              <p className="text-[#A3A3A3] text-xs text-center">
+                Finalizing your purchase...
+              </p>
+            )}
+
+            {user?.id ? (
+              item.stock === 0 ? (
+                <p className="text-[#A3A3A3] text-sm text-center">
+                  This item is out of stock.
+                </p>
+              ) : (
+                <PaymentButton
+                  endpoint="/api/payment"
+                  amount={`$${formattedTotalPrice}`}
+                  description={`Pay for ${quantity} × ${item.title}`}
+                  onSuccess={async () => {
+                    await handlePurchase();
+                  }}
+                  onError={(message) => setPurchaseError(message)}
+                />
+              )
+            ) : (
+              <p className="text-[#A3A3A3] text-sm text-center">
+                Sign in to complete your purchase.
+              </p>
+            )}
           </div>
         )}
       </SlidingPanel>
@@ -315,4 +353,3 @@ export const MarketItemDetailModal: React.FC<MarketItemDetailModalProps> = ({
 };
 
 export default MarketItemDetailModal;
-
