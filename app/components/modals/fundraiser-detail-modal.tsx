@@ -11,6 +11,7 @@ import Image from "next/image";
 import { EyeIcon, TrashIcon } from "../ui/icons";
 import { SlidingPanel } from "../ui/sliding-panel";
 import { useAuthStore } from "@/app/store";
+import { PaymentButton } from "../payment/PaymentButton";
 
 interface FundraiserDetailModalProps {
   isOpen: boolean;
@@ -37,6 +38,11 @@ export const FundraiserDetailModal: React.FC<FundraiserDetailModalProps> = ({
   const [message, setMessage] = React.useState("");
   const [anonymous, setAnonymous] = React.useState(false);
   const [donateError, setDonateError] = React.useState<string | null>(null);
+
+  const formattedDonationAmount = React.useMemo(
+    () => (amount > 0 ? amount.toFixed(2) : "0.00"),
+    [amount]
+  );
 
   const handleDonate = async () => {
     if (!fundraiser || !user?.id || amount <= 0) return;
@@ -341,15 +347,33 @@ export const FundraiserDetailModal: React.FC<FundraiserDetailModalProps> = ({
               </div>
             )}
 
-            <Button
-              onClick={handleDonate}
-              isLoading={donateMutation.isPending}
-              loadingText="Processing..."
-              className="w-full"
-              disabled={!user?.id || amount <= 0}
-            >
-              Confirm Donation
-            </Button>
+            {donateMutation.isPending && (
+              <p className="text-[#A3A3A3] text-xs text-center">
+                Finalizing your donation...
+              </p>
+            )}
+
+            {user?.id ? (
+              amount > 0 ? (
+                <PaymentButton
+                  endpoint="/api/payment"
+                  amount={`$${formattedDonationAmount}`}
+                  description={`Donate to ${fundraiser.title}`}
+                  onSuccess={async () => {
+                    await handleDonate();
+                  }}
+                  onError={(message) => setDonateError(message)}
+                />
+              ) : (
+                <Button className="w-full" >
+                  Enter an amount to pay.
+                </Button>
+              )
+            ) : (
+              <p className="text-[#A3A3A3] text-sm text-center">
+                Sign in to donate.
+              </p>
+            )}
           </div>
         )}
       </SlidingPanel>

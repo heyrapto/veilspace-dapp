@@ -2,7 +2,8 @@
 
 import { useX402Payment } from '@/app/hooks/useX402Payment';
 import { useAccount } from 'wagmi';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { Button } from '../ui/button';
+import CustomConnectButton from '../ui/custom/connect-button';
 
 interface PaymentButtonProps {
   endpoint?: string;
@@ -18,6 +19,7 @@ export function PaymentButton({
   description = 'Make Payment',
   onSuccess,
   onError,
+  ...props
 }: PaymentButtonProps) {
   const { isConnected } = useAccount();
   const { makePayment, isLoading, error, paymentData } = useX402Payment();
@@ -36,27 +38,20 @@ export function PaymentButton({
     return (
       <div className="flex flex-col items-center gap-4">
         <p className="text-sm text-gray-600">Connect your wallet to make a payment</p>
-        <ConnectButton />
+        <CustomConnectButton />
       </div>
     );
   }
 
   return (
     <div className="flex flex-col gap-4">
-      <button
+      <Button
         onClick={handlePayment}
         disabled={isLoading}
-        className={`
-          px-6 py-3 rounded-lg font-semibold text-white
-          ${isLoading
-            ? 'bg-gray-400 cursor-not-allowed'
-            : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800'
-          }
-          transition-colors duration-200
-        `}
+        {...props}
       >
         {isLoading ? 'Processing Payment...' : `Pay ${amount} USDC`}
-      </button>
+      </Button>
 
       {description && (
         <p className="text-sm text-gray-600 text-center">{description}</p>
