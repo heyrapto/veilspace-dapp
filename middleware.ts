@@ -6,7 +6,7 @@ export const middleware = paymentMiddleware(
   {
     '/api/payment': {
       price: '$1.00', // Amount in USDC
-      network: "base", // base mainnet
+      network: "base-sepolia", // base mainnet
       config: {
         description: 'USDC payment on Ethereum',
       }
