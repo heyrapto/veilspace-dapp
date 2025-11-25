@@ -9,13 +9,13 @@ interface PaymentButtonProps {
   endpoint?: string;
   amount?: string;
   description?: string;
-  onSuccess?: (data: any) => void;
+  onSuccess?: (data: unknown) => void;
   onError?: (error: string) => void;
 }
 
 export function PaymentButton({
   endpoint = '/api/payment',
-  amount = '$1.00',
+  amount,
   description = 'Make Payment',
   onSuccess,
   onError,
@@ -26,7 +26,19 @@ export function PaymentButton({
 
   const handlePayment = async () => {
     try {
-      const result = await makePayment(endpoint);
+      // Extract numeric amount from the amount string (e.g., "$10.50" -> "10.50")
+      let paymentEndpoint = endpoint;
+      if (amount) {
+        // Remove $ sign and any whitespace, extract just the number
+        const numericAmount = amount.replace(/[^0-9.]/g, '');
+        if (numericAmount && parseFloat(numericAmount) > 0) {
+          // Add amount as query parameter
+          const separator = endpoint.includes('?') ? '&' : '?';
+          paymentEndpoint = `${endpoint}${separator}amount=${numericAmount}`;
+        }
+      }
+      
+      const result = await makePayment(paymentEndpoint);
       onSuccess?.(result);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Payment failed';

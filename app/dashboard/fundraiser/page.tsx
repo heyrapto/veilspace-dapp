@@ -311,7 +311,7 @@ export default function FundraiserPage() {
                               Raised
                             </span>
                             <span className="text-white font-medium text-lg">
-                              ${fundraiser.raised.toLocaleString()} / ${fundraiser.goal.toLocaleString()}
+                              ${(fundraiser.totalRaised || fundraiser.raised || 0).toLocaleString()} / ${fundraiser.goal.toLocaleString()}
                             </span>
                           </div>
                           <h5 className="text-sm text-[#335CFF]">
