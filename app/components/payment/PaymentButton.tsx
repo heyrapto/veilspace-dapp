@@ -26,13 +26,10 @@ export function PaymentButton({
 
   const handlePayment = async () => {
     try {
-      // Extract numeric amount from the amount string (e.g., "$10.50" -> "10.50")
       let paymentEndpoint = endpoint;
       if (amount) {
-        // Remove $ sign and any whitespace, extract just the number
         const numericAmount = amount.replace(/[^0-9.]/g, '');
         if (numericAmount && parseFloat(numericAmount) > 0) {
-          // Add amount as query parameter
           const separator = endpoint.includes('?') ? '&' : '?';
           paymentEndpoint = `${endpoint}${separator}amount=${numericAmount}`;
         }
