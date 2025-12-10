@@ -25,7 +25,7 @@ const createDynamicMiddleware = () => {
       {
         '/api/payment': {
           price, // Dynamic price based on query parameter
-          network: "base-sepolia", // base mainnet
+          network: "base", // base mainnet
           config: {
             description: 'USDC payment on Ethereum',
           }

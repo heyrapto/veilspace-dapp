@@ -65,13 +65,7 @@ export function PaymentButton({
       {description && (
         <p className="text-sm text-gray-600 text-center">{description}</p>
       )}
-
-      {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-sm text-red-600">Error: {error}</p>
-        </div>
-      )}
-
+      
       {paymentData && (
         <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
           <p className="text-sm text-green-600 font-semibold">Payment Successful!</p>

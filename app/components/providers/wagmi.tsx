@@ -9,15 +9,16 @@ import {
     QueryClientProvider,
     QueryClient,
 } from "@tanstack/react-query";
-import { base, baseSepolia } from "wagmi/chains";
+import { base } from "wagmi/chains";
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
 
 const queryClient = new QueryClient();
 
+// Configure for Base mainnet
 export const wagmiConfig = getDefaultConfig({
   appName: "Optrix.finance",
   projectId: "3114d3c28803a5d487e6f5b2d5e0655b",
-  chains: [baseSepolia],
+  chains: [base], // Base mainnet
   ssr: true,
 });
 
