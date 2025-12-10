@@ -313,7 +313,7 @@ export const MarketItemDetailModal: React.FC<MarketItemDetailModalProps> = ({
             </div>
 
             {purchaseError && (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-[10px] p-3">
+              <div className="bg-red-500/10 border border-red-500/20 rounded-[10px] p-3 overflow-x-auto">
                 <p className="text-red-400 text-sm">{purchaseError}</p>
               </div>
             )}

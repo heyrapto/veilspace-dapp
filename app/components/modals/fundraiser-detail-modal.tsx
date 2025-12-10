@@ -342,7 +342,7 @@ export const FundraiserDetailModal: React.FC<FundraiserDetailModalProps> = ({
             </div>
 
             {donateError && (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-[10px] p-3">
+              <div className="bg-red-500/10 border border-red-500/20 rounded-[10px] p-3 overflow-x-auto">
                 <p className="text-red-400 text-sm">{donateError}</p>
               </div>
             )}
