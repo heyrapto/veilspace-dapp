@@ -69,6 +69,11 @@ export function useX402Payment(): UseX402PaymentReturn {
 
       const paymentInfo = instructions.accepts[0];
 
+      // Validate that sender and recipient are not the same
+      if (getAddress(address) === getAddress(paymentInfo.payTo)) {
+        throw new Error('Cannot send payment to yourself. The connected wallet address matches the payment recipient address.');
+      }
+
       // Step 2: Create payment payload using EIP-3009 TransferWithAuthorization
       const paymentPayload = await createPaymentPayload(
         walletClient,
@@ -193,6 +198,7 @@ async function createPaymentPayload(
   console.log('Signature:', signature);
 
   // Return the x402 payment payload
+  // Note: payer is derived from payload.authorization.from, not a top-level field
   return {
     x402Version: 1,
     scheme: 'exact',

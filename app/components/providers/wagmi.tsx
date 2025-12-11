@@ -14,11 +14,10 @@ import { getDefaultConfig } from "@rainbow-me/rainbowkit";
 
 const queryClient = new QueryClient();
 
-// Configure for Base mainnet
 export const wagmiConfig = getDefaultConfig({
   appName: "Optrix.finance",
   projectId: "3114d3c28803a5d487e6f5b2d5e0655b",
-  chains: [base], // Base mainnet
+  chains: [base],
   ssr: true,
 });
 
