@@ -7,6 +7,7 @@ import { useSearchStore } from "@/app/store";
 import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi";
 import * as React from "react";
+import Image from "next/image";
 
 const TopNavbar = () => {
   const router = useRouter();
@@ -53,7 +54,9 @@ const TopNavbar = () => {
     <div className=" border-b border-[#262626]  h-20 bg-[#171717] px-[44px] ">
       <div className="max-w-[1440px] mx-auto w-full flex justify-between items-center h-full">
         <div className="flex items-center gap-6">
-          <Link href="/dashboard" className="w-10 h-10 bg-[#7D52F4] rounded-full"></Link>
+          <Link href="/dashboard">
+            <Image src="/logo.png" alt="logo" width={50} height={50} className="rounded-full"/>
+          </Link>
           <nav className=" flex gap-1 ">
             {menuItems
               .find((menu) => menu.title === "Main")
