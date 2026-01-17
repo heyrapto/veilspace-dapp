@@ -3,13 +3,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   apiClient,
-  MarketItem,
   MarketListParams,
-  MarketListResponse,
   CreateMarketItemRequest,
   UpdateMarketItemRequest,
   PurchaseRequest,
-  Purchase,
 } from "../services.tsx/api-client";
 
 // Query Keys

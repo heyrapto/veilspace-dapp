@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import { useSearchStore } from "@/app/store";
 import { Loading } from "../../components/ui/loading";
 import { EmptyState } from "../../components/ui/empty-state";
@@ -11,8 +11,8 @@ import { EyeIcon } from "../../components/ui/icons";
 import Link from "next/link";
 
 export default function SearchPage() {
-  const router = useRouter();
-  const { results, isLoading, error, search: performSearch, query: storeQuery } = useSearchStore();
+  // const router = useRouter();
+  const { results, isLoading, error, search: performSearch } = useSearchStore();
   const [query, setQuery] = React.useState("");
   const [type, setType] = React.useState<"all" | "market" | "fundraiser">("all");
 

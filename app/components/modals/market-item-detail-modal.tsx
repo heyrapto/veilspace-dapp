@@ -26,7 +26,7 @@ export const MarketItemDetailModal: React.FC<MarketItemDetailModalProps> = ({
   isOpen,
   onClose,
   itemId,
-  onEdit,
+  // onEdit,
   onDelete,
   canEdit = false,
 }) => {
@@ -100,7 +100,7 @@ export const MarketItemDetailModal: React.FC<MarketItemDetailModalProps> = ({
           {canEdit && item && (
             <>
               {/* <Button
-                variant="default"
+                variant="secondary"
                 onClick={() => {
                   onEdit(item);
                   onClose();
@@ -109,12 +109,12 @@ export const MarketItemDetailModal: React.FC<MarketItemDetailModalProps> = ({
                 Edit
               </Button> */}
               <Button
-              variant="default"
-              onClick={() => setIsPurchasePanelOpen(true)}
-              disabled={item.stock === 0}
-            >
-              Purchase
-            </Button>
+                variant="default"
+                onClick={() => setIsPurchasePanelOpen(true)}
+                disabled={item.stock === 0}
+              >
+                Purchase
+              </Button>
               <Button
                 variant="destructive"
                 onClick={() => {

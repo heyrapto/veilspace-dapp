@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { PaymentButton } from '@/app/components/payment/PaymentButton';
@@ -33,11 +34,11 @@ export default function PaymentDemoPage() {
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
             <h2 className="font-semibold text-blue-900 mb-2">How it works:</h2>
             <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
-              <li>Connect your wallet (make sure you're on Base network)</li>
+              <li>Connect your wallet (make sure you are on Base network)</li>
               <li>Click the payment button</li>
               <li>Sign the payment message in your wallet</li>
               <li>The payment will be processed on-chain</li>
-              <li>You'll receive access to the protected content</li>
+              <li>You will receive access to the protected content</li>
             </ol>
           </div>
 

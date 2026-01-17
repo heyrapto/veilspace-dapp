@@ -26,7 +26,7 @@ export const FundraiserDetailModal: React.FC<FundraiserDetailModalProps> = ({
   isOpen,
   onClose,
   fundraiserId,
-  onEdit,
+  // onEdit,
   onDelete,
   canEdit = false,
 }) => {

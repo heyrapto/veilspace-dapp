@@ -9,16 +9,17 @@ import {
     QueryClientProvider,
     QueryClient,
 } from "@tanstack/react-query";
+import { baseSepolia } from "wagmi/chains";
 import { base } from "wagmi/chains";
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
 
 const queryClient = new QueryClient();
 
 export const wagmiConfig = getDefaultConfig({
-  appName: "Optrix.finance",
-  projectId: "3114d3c28803a5d487e6f5b2d5e0655b",
-  chains: [base],
-  ssr: true,
+    appName: "Optrix.finance",
+    projectId: "3114d3c28803a5d487e6f5b2d5e0655b",
+    chains: [base],
+    ssr: true,
 });
 
 export function WagmiProviders({ children }: { children: React.ReactNode }) {

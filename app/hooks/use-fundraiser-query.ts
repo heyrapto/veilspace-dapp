@@ -1,15 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   apiClient,
-  Fundraiser,
   FundraiserListParams,
-  FundraiserListResponse,
   CreateFundraiserRequest,
   UpdateFundraiserRequest,
   DonateRequest,
-  Donation,
 } from "../services.tsx/api-client";
 
 // Query Keys

@@ -4,7 +4,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   apiClient,
   LeaderboardParams,
-  LeaderboardResponse,
 } from "../services.tsx/api-client";
 
 // Query Keys
