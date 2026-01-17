@@ -35,7 +35,7 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
           />
         </svg>
       </div>
-      <h3 className="text-white/95 text-lg font-medium mb-2">{title}</h3>
+      <h3 className="text-white/95 text-lg font-medium mb-2 text-center">{title}</h3>
       <p className="text-[#A3A3A3] text-sm text-center max-w-md mb-6">
         {message}
       </p>
